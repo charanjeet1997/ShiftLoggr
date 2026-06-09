@@ -1,0 +1,20 @@
+rules_version = '2';
+
+// ⚠️ DEMO RULES — open read/write.
+// Because the app is serverless with Firestore-only login, the browser reads the
+// `users` collection (incl. password hashes) directly, so these rules allow all
+// access. This is FINE FOR A DEMO / learning project, NOT for production.
+//
+// To harden later: move auth to Firebase Authentication and restrict each
+// collection to `request.auth` with role checks.
+//
+// How to apply: Firebase Console → Firestore Database → Rules tab → paste this →
+// Publish. (Or `firebase deploy --only firestore:rules` with the CLI.)
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
