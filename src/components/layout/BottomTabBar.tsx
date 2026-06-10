@@ -1,14 +1,16 @@
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../utils/cn'
 import { useAuth } from '../../hooks/useAuth'
-import { tabsForRole } from './navConfig'
+import { usePermissions } from '../../hooks/usePermissions'
+import { tabsForPermissions } from './navConfig'
 
 // Mobile bottom nav. Safe-area aware for the iOS home bar. Hidden at lg+
 // (parent applies `lg:hidden`).
 export function BottomTabBar({ className }: { className?: string }) {
   const { user } = useAuth()
+  const { permissions } = usePermissions()
   if (!user) return null
-  const tabs = tabsForRole(user.role)
+  const tabs = tabsForPermissions(permissions)
 
   return (
     <nav

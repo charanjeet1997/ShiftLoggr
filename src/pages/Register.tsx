@@ -1,27 +1,12 @@
-import { useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { Briefcase, UserCog } from 'lucide-react'
-import type { Role } from '../types'
+import type { Role, RoleDef } from '../types'
 import { useAuth } from '../hooks/useAuth'
+import { getRoles } from '../api/roles'
 import { Button, Input } from '../components/ui'
 import { AppIcon, appName } from '../components/layout/navConfig'
 import { cn } from '../utils/cn'
-
-// Role = the permission level granted to the new account.
-const roles: { value: Role; label: string; desc: string; Icon: typeof Briefcase }[] = [
-  {
-    value: 'employee',
-    label: 'Employee',
-    desc: 'View shifts, clock in/out, request swaps',
-    Icon: Briefcase,
-  },
-  {
-    value: 'manager',
-    label: 'Manager',
-    desc: 'Manage schedules, team, swaps & geofence zones',
-    Icon: UserCog,
-  },
-]
 
 export function Register() {
   const { user, register, status, error, clearError } = useAuth()
@@ -34,8 +19,21 @@ export function Register() {
   const [role, setRole] = useState<Role>('employee')
   const [localError, setLocalError] = useState<string | null>(null)
 
+  // Roles are loaded from Firestore so custom roles appear here automatically.
+  const [roleDefs, setRoleDefs] = useState<RoleDef[]>([])
+  useEffect(() => {
+    getRoles()
+      .then((rs) => {
+        setRoleDefs(rs)
+        // Default to the first employee-area role, else the first role.
+        const def = rs.find((r) => r.area === 'employee') ?? rs[0]
+        if (def) setRole(def.key)
+      })
+      .catch(() => setRoleDefs([]))
+  }, [])
+
   if (user) {
-    return <Navigate to={user.role === 'manager' ? '/manager' : '/employee'} replace />
+    return <Navigate to="/" replace />
   }
 
   async function onSubmit(e: FormEvent) {
@@ -51,8 +49,8 @@ export function Register() {
       return
     }
     try {
-      const u = await register({ name, email, password, role })
-      navigate(u.role === 'manager' ? '/manager' : '/employee', { replace: true })
+      await register({ name, email, password, role })
+      navigate('/', { replace: true })
     } catch {
       /* error surfaced via store */
     }
@@ -113,19 +111,20 @@ export function Register() {
             required
           />
 
-          {/* Permission / role selector */}
+          {/* Permission / role selector (loaded from the roles collection) */}
           <div>
             <span className="mb-1 block text-sm font-medium text-gray-700">
-              Account permission
+              Account role
             </span>
             <div className="grid grid-cols-1 gap-2">
-              {roles.map(({ value, label, desc, Icon }) => {
-                const active = role === value
+              {roleDefs.map((r) => {
+                const active = role === r.key
+                const Icon = r.area === 'manager' ? UserCog : Briefcase
                 return (
                   <button
                     type="button"
-                    key={value}
-                    onClick={() => setRole(value)}
+                    key={r.key}
+                    onClick={() => setRole(r.key)}
                     className={cn(
                       'flex items-start gap-3 rounded-xl border p-3 text-left transition-colors',
                       active
@@ -143,9 +142,12 @@ export function Register() {
                     </span>
                     <span>
                       <span className="block text-sm font-medium text-gray-900">
-                        {label}
+                        {r.label}
                       </span>
-                      <span className="block text-xs text-gray-500">{desc}</span>
+                      <span className="block text-xs capitalize text-gray-500">
+                        {r.area} · {r.permissions.length} permission
+                        {r.permissions.length === 1 ? '' : 's'}
+                      </span>
                     </span>
                   </button>
                 )

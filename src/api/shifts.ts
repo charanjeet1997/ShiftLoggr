@@ -1,5 +1,5 @@
 import type { Shift } from '../types'
-import { areaForRole } from './client'
+import { roleHasPermission } from './client'
 import { create, getAll, queryBy, remove, update, type Raw } from './db'
 import { requireSession } from './session'
 
@@ -20,14 +20,13 @@ function toShift(d: Raw): Shift {
   }
 }
 
-// Manager-area users see all shifts; everyone else only their own.
+// Users who can manage shifts see all of them; everyone else only their own.
 export async function getShifts(): Promise<Shift[]> {
   const me = requireSession()
-  const area = await areaForRole(me.role)
-  const rows =
-    area === 'manager'
-      ? await getAll('shifts')
-      : await queryBy('shifts', [['userId', '==', me.uid]])
+  const all = await roleHasPermission(me.role, 'manage_shifts')
+  const rows = all
+    ? await getAll('shifts')
+    : await queryBy('shifts', [['userId', '==', me.uid]])
   return rows.map(toShift)
 }
 

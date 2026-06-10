@@ -1,5 +1,5 @@
 import type { SwapRequest } from '../types'
-import { areaForRole } from './client'
+import { roleHasPermission } from './client'
 import {
   create,
   db,
@@ -36,8 +36,8 @@ function toSwap(d: Raw): SwapRequest {
 
 export async function getSwaps(): Promise<SwapRequest[]> {
   const me = requireSession()
-  const area = await areaForRole(me.role)
-  if (area === 'manager') return (await getAll('swapRequests')).map(toSwap)
+  const all = await roleHasPermission(me.role, 'approve_swaps')
+  if (all) return (await getAll('swapRequests')).map(toSwap)
 
   const [asRequester, asTarget] = await Promise.all([
     queryBy('swapRequests', [['requesterId', '==', me.uid]]),

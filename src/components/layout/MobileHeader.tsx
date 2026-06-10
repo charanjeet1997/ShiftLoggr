@@ -2,7 +2,7 @@ import { Bell, ChevronLeft } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { cn } from '../../utils/cn'
 import { useAuth } from '../../hooks/useAuth'
-import { AppIcon, appName, navForRole } from './navConfig'
+import { AppIcon, appName, navItemForPath } from './navConfig'
 
 // Top bar on mobile: back button (nested view) or logo, page title, bell.
 export function MobileHeader({ className }: { className?: string }) {
@@ -11,9 +11,8 @@ export function MobileHeader({ className }: { className?: string }) {
   const navigate = useNavigate()
   if (!user) return null
 
-  const items = navForRole(user.role)
   const roots = ['/manager', '/employee']
-  const match = items.find((i) => i.path === location.pathname)
+  const match = navItemForPath(location.pathname)
   const pageTitle = match?.label ?? appName
   const canGoBack = !roots.includes(location.pathname) && !match
 

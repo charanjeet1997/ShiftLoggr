@@ -1,15 +1,23 @@
 // Shared api helpers for the serverless (Firebase) data layer.
-import type { Area } from '../types'
-import { builtInArea } from '../constants/permissions'
+import type { Permission } from '../types'
+import { BUILTIN_ROLES } from '../constants/permissions'
 import { getById } from './db'
 
 export { setSession, getSession, requireSession } from './session'
 
-// Resolve a role key to its area (manager/employee). Reads the role doc from
-// Firestore; falls back to the built-in mapping for manager/employee.
-export async function areaForRole(roleKey: string): Promise<Area> {
+// Resolve a role key to its permission set (Firestore role doc, falling back to
+// the built-in roles). Used by the data layer to scope queries.
+export async function permissionsForRole(roleKey: string): Promise<Permission[]> {
   const role = await getById('roles', roleKey)
-  return (role?.area as Area) ?? builtInArea(roleKey)
+  if (role?.permissions) return role.permissions as Permission[]
+  return BUILTIN_ROLES.find((r) => r.key === roleKey)?.permissions ?? []
+}
+
+export async function roleHasPermission(
+  roleKey: string,
+  permission: Permission,
+): Promise<boolean> {
+  return (await permissionsForRole(roleKey)).includes(permission)
 }
 
 /** Normalise an error (Firebase or otherwise) into a message for the UI. */

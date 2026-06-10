@@ -2,13 +2,15 @@ import { LogOut } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../utils/cn'
 import { useAuth } from '../../hooks/useAuth'
-import { AppIcon, appName, navForRole } from './navConfig'
+import { usePermissions } from '../../hooks/usePermissions'
+import { AppIcon, appName, navForPermissions } from './navConfig'
 
 // Fixed 200px desktop sidebar. Hidden below lg (parent applies `hidden lg:flex`).
 export function Sidebar({ className }: { className?: string }) {
   const { user, logout } = useAuth()
+  const { permissions } = usePermissions()
   if (!user) return null
-  const items = navForRole(user.role)
+  const items = navForPermissions(permissions)
 
   return (
     <aside

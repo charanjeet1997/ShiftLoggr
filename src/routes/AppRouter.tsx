@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppShell } from '../components/layout/AppShell'
-import { ProtectedRoute } from './ProtectedRoute'
-import { useAuth } from '../hooks/useAuth'
+import { Guard, RequireAuth, RootRedirect } from './ProtectedRoute'
 
 import { Login } from '../pages/Login'
 import { Register } from '../pages/Register'
@@ -19,13 +18,8 @@ import { ClockIn } from '../pages/employee/ClockIn'
 import { RequestSwap } from '../pages/employee/RequestSwap'
 import { SwapStatus } from '../pages/employee/SwapStatus'
 
-// Send a logged-in user to their role's home; otherwise to login.
-function RootRedirect() {
-  const { user } = useAuth()
-  if (!user) return <Navigate to="/login" replace />
-  return <Navigate to={user.role === 'manager' ? '/manager' : '/employee'} replace />
-}
-
+// All pages live under one shell now; access is gated per-page by permission
+// rather than by a fixed manager/employee area.
 export function AppRouter() {
   return (
     <Routes>
@@ -34,25 +28,19 @@ export function AppRouter() {
       <Route path="/register" element={<Register />} />
       <Route path="/unauthorized" element={<Unauthorized />} />
 
-      {/* Manager area */}
-      <Route element={<ProtectedRoute allowedRoles={['manager']} />}>
+      <Route element={<RequireAuth />}>
         <Route element={<AppShell />}>
-          <Route path="/manager" element={<Dashboard />} />
-          <Route path="/manager/schedule" element={<Schedule />} />
-          <Route path="/manager/swaps" element={<SwapRequests />} />
-          <Route path="/manager/team" element={<Team />} />
-          <Route path="/manager/geofence" element={<Geofence />} />
-          <Route path="/manager/roles" element={<Roles />} />
-        </Route>
-      </Route>
+          <Route path="/manager" element={<Guard permission="view_dashboard"><Dashboard /></Guard>} />
+          <Route path="/manager/schedule" element={<Guard permission="manage_shifts"><Schedule /></Guard>} />
+          <Route path="/manager/swaps" element={<Guard permission="approve_swaps"><SwapRequests /></Guard>} />
+          <Route path="/manager/team" element={<Guard permission="manage_team"><Team /></Guard>} />
+          <Route path="/manager/geofence" element={<Guard permission="manage_geofence"><Geofence /></Guard>} />
+          <Route path="/manager/roles" element={<Guard permission="manage_roles"><Roles /></Guard>} />
 
-      {/* Employee area */}
-      <Route element={<ProtectedRoute allowedRoles={['employee']} />}>
-        <Route element={<AppShell />}>
-          <Route path="/employee" element={<MyShifts />} />
-          <Route path="/employee/clock" element={<ClockIn />} />
-          <Route path="/employee/swap" element={<RequestSwap />} />
-          <Route path="/employee/requests" element={<SwapStatus />} />
+          <Route path="/employee" element={<Guard permission="view_own_shifts"><MyShifts /></Guard>} />
+          <Route path="/employee/clock" element={<Guard permission="clock"><ClockIn /></Guard>} />
+          <Route path="/employee/swap" element={<Guard permission="request_swap"><RequestSwap /></Guard>} />
+          <Route path="/employee/requests" element={<Guard permission="request_swap"><SwapStatus /></Guard>} />
         </Route>
       </Route>
 

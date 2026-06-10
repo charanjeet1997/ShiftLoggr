@@ -203,19 +203,10 @@ function RoleModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [target])
 
-  const catalog = PERMISSION_CATALOG.find((g) => g.area === area)?.items ?? []
-
   function togglePerm(p: Permission) {
     setPermissions((prev) =>
       prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
     )
-  }
-
-  function changeArea(next: Area) {
-    setArea(next)
-    // Permissions belong to an area; drop any that don't apply to the new one.
-    const allowed = PERMISSION_CATALOG.find((g) => g.area === next)?.items.map((i) => i.key) ?? []
-    setPermissions((prev) => prev.filter((p) => allowed.includes(p)))
   }
 
   async function onSubmit(e: FormEvent) {
@@ -262,13 +253,13 @@ function RoleModal({
         />
 
         <Select
-          label="Area"
+          label="Base experience"
           value={area}
-          onChange={(e) => changeArea(e.target.value as Area)}
-          disabled={!isNew} // area is locked once created (avoids orphaning users)
+          onChange={(e) => setArea(e.target.value as Area)}
+          disabled={!isNew} // locked once created (it sets the landing page)
           options={[
-            { value: 'manager', label: 'Manager — desktop admin access' },
-            { value: 'employee', label: 'Employee — mobile self-service' },
+            { value: 'manager', label: 'Desktop (admin-style home)' },
+            { value: 'employee', label: 'Mobile (self-service home)' },
           ]}
         />
 
@@ -276,23 +267,35 @@ function RoleModal({
           <span className="mb-1 block text-sm font-medium text-gray-700">
             Permissions
           </span>
-          <div className="space-y-2">
-            {catalog.map((item) => (
-              <label
-                key={item.key}
-                className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-100 p-2 hover:bg-gray-50"
-              >
-                <input
-                  type="checkbox"
-                  checked={permissions.includes(item.key)}
-                  onChange={() => togglePerm(item.key)}
-                  className="mt-0.5 h-4 w-4 accent-brand-600"
-                />
-                <span>
-                  <span className="block text-sm text-gray-900">{item.label}</span>
-                  <span className="block text-xs text-gray-500">{item.desc}</span>
-                </span>
-              </label>
+          <p className="mb-2 text-xs text-gray-500">
+            Pick any mix — these decide which pages and actions this role can use.
+          </p>
+          <div className="space-y-3">
+            {PERMISSION_CATALOG.map((group) => (
+              <div key={group.area}>
+                <p className="mb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400">
+                  {group.area === 'manager' ? 'Management' : 'Self-service'}
+                </p>
+                <div className="space-y-2">
+                  {group.items.map((item) => (
+                    <label
+                      key={item.key}
+                      className="flex cursor-pointer items-start gap-2 rounded-lg border border-gray-100 p-2 hover:bg-gray-50"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={permissions.includes(item.key)}
+                        onChange={() => togglePerm(item.key)}
+                        className="mt-0.5 h-4 w-4 accent-brand-600"
+                      />
+                      <span>
+                        <span className="block text-sm text-gray-900">{item.label}</span>
+                        <span className="block text-xs text-gray-500">{item.desc}</span>
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </div>

@@ -10,17 +10,17 @@ export function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
-  // Already signed in → bounce to role home.
+  // Already signed in → let RootRedirect route to the right home by permission.
   if (user) {
-    return <Navigate to={user.role === 'manager' ? '/manager' : '/employee'} replace />
+    return <Navigate to="/" replace />
   }
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     clearError()
     try {
-      const u = await login({ email, password })
-      navigate(u.role === 'manager' ? '/manager' : '/employee', { replace: true })
+      await login({ email, password })
+      navigate('/', { replace: true })
     } catch {
       /* error surfaced via store */
     }
