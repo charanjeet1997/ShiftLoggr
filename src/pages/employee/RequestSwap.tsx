@@ -59,7 +59,8 @@ export function RequestSwap() {
     setError(null)
     try {
       await createSwap({
-        targetId: targetShift.userId,
+        // getSwappableShifts excludes open (unassigned) shifts.
+        targetId: targetShift.userId!,
         requesterShiftId: myShiftId,
         targetShiftId,
         reason: reason.trim() || null,

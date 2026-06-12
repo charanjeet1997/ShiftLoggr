@@ -14,6 +14,7 @@ import { Geofence } from '../pages/manager/Geofence'
 import { Roles } from '../pages/manager/Roles'
 
 import { MyShifts } from '../pages/employee/MyShifts'
+import { OpenShifts } from '../pages/employee/OpenShifts'
 import { ClockIn } from '../pages/employee/ClockIn'
 import { RequestSwap } from '../pages/employee/RequestSwap'
 import { SwapStatus } from '../pages/employee/SwapStatus'
@@ -38,6 +39,7 @@ export function AppRouter() {
           <Route path="/manager/roles" element={<Guard permission="manage_roles"><Roles /></Guard>} />
 
           <Route path="/employee" element={<Guard permission="view_own_shifts"><MyShifts /></Guard>} />
+          <Route path="/employee/open" element={<Guard permission="view_own_shifts"><OpenShifts /></Guard>} />
           <Route path="/employee/clock" element={<Guard permission="clock"><ClockIn /></Guard>} />
           <Route path="/employee/swap" element={<Guard permission="request_swap"><RequestSwap /></Guard>} />
           <Route path="/employee/requests" element={<Guard permission="request_swap"><SwapStatus /></Guard>} />

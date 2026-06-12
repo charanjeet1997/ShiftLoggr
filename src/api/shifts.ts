@@ -9,7 +9,7 @@ export type NewShift = Omit<Shift, 'shiftId' | 'createdAt' | 'status'> &
 function toShift(d: Raw): Shift {
   return {
     shiftId: d.id,
-    userId: d.userId as string,
+    userId: (d.userId as string | null) ?? null,
     locationId: d.locationId as string,
     startTime: d.startTime as string,
     endTime: d.endTime as string,
@@ -34,7 +34,19 @@ export async function getShifts(): Promise<Shift[]> {
 export async function getSwappableShifts(): Promise<Shift[]> {
   const me = requireSession()
   const rows = await queryBy('shifts', [['status', '==', 'scheduled']])
-  return rows.filter((s) => s.userId !== me.uid).map(toShift)
+  return rows
+    .filter((s) => s.userId && s.userId !== me.uid)
+    .map(toShift)
+}
+
+// Unassigned shifts any employee can request to claim.
+export async function getOpenShifts(): Promise<Shift[]> {
+  requireSession()
+  const rows = await queryBy('shifts', [['userId', '==', null]])
+  return rows
+    .map(toShift)
+    .filter((s) => new Date(s.endTime).getTime() > Date.now())
+    .sort((a, b) => a.startTime.localeCompare(b.startTime))
 }
 
 export async function createShift(payload: NewShift): Promise<Shift> {

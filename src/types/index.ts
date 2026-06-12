@@ -47,7 +47,7 @@ export interface User {
 
 export interface Shift {
   shiftId: string
-  userId: string
+  userId: string | null // null = open shift, claimable by any employee
   locationId: string
   startTime: string // ISO
   endTime: string // ISO
@@ -64,6 +64,16 @@ export interface SwapRequest {
   requesterShiftId: string
   targetShiftId: string
   reason: string | null
+  status: SwapStatus
+  createdAt: string
+  resolvedAt: string | null
+}
+
+// An employee's claim on an open shift, pending manager approval.
+export interface OpenShiftRequest {
+  requestId: string
+  shiftId: string
+  userId: string
   status: SwapStatus
   createdAt: string
   resolvedAt: string | null

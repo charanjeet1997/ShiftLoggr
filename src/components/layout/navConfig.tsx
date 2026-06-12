@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  CalendarPlus,
   ClipboardList,
   Clock,
   LayoutDashboard,
@@ -31,6 +32,7 @@ const ALL_NAV: NavItem[] = [
   { label: 'Geofence', path: '/manager/geofence', Icon: MapPin, permission: 'manage_geofence' },
   { label: 'Roles', path: '/manager/roles', Icon: ShieldCheck, permission: 'manage_roles' },
   { label: 'My Shifts', path: '/employee', Icon: CalendarDays, permission: 'view_own_shifts', tab: true },
+  { label: 'Open Shifts', path: '/employee/open', Icon: CalendarPlus, permission: 'view_own_shifts', tab: true },
   { label: 'Clock In', path: '/employee/clock', Icon: Clock, permission: 'clock', tab: true },
   { label: 'Swap', path: '/employee/swap', Icon: Repeat, permission: 'request_swap', tab: true },
   { label: 'Requests', path: '/employee/requests', Icon: ListChecks, permission: 'request_swap' },

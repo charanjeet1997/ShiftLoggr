@@ -33,8 +33,8 @@ export function useReferenceData() {
     locations.find((l) => l.locationId === id)?.name ?? 'Unknown site'
   const location = (id: string) =>
     locations.find((l) => l.locationId === id) ?? null
-  const userName = (id: string) =>
-    users.find((u) => u.uid === id)?.name ?? 'Unknown'
+  const userName = (id: string | null) =>
+    id ? (users.find((u) => u.uid === id)?.name ?? 'Unknown') : 'Open shift'
 
   return {
     locations,

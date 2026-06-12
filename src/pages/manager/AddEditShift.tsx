@@ -22,6 +22,9 @@ function toLocalInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
+// Select values must be non-empty strings; this sentinel marks an open shift.
+const OPEN = '__open__'
+
 const repeatOptions = [
   { value: 'none', label: 'Does not repeat' },
   { value: 'weekly', label: 'Weekly' },
@@ -50,7 +53,7 @@ export function AddEditShift({
     if (!open) return
     setError(null)
     if (shift) {
-      setUserId(shift.userId)
+      setUserId(shift.userId ?? OPEN)
       setLocationId(shift.locationId)
       setRole(shift.role)
       setStart(toLocalInput(shift.startTime))
@@ -77,7 +80,7 @@ export function AddEditShift({
     setError(null)
     try {
       const payload = {
-        userId,
+        userId: userId === OPEN ? null : userId,
         locationId,
         role,
         startTime: new Date(start).toISOString(),
@@ -144,7 +147,10 @@ export function AddEditShift({
           name="userId"
           value={userId}
           onChange={(e) => setUserId(e.target.value)}
-          options={employees.map((u) => ({ value: u.uid, label: u.name }))}
+          options={[
+            ...employees.map((u) => ({ value: u.uid, label: u.name })),
+            { value: OPEN, label: 'Open shift (unassigned)' },
+          ]}
           required
         />
         <Select
